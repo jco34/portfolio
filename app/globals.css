@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --color-bg: #141414;
+  --color-surface: #1c1c1c;
+  --color-surface-2: #0f0f0f;
+  --color-chip: #242424;
+  --color-chip-active: #3e3e3e;
+  --color-edge: #1f1f1f;
+  --color-edge-2: #2f2f37;
+  --color-fg: #fafafa;
+  --color-muted: #8c8c8c;
+  --color-muted-2: #6d6d6d;
+  --color-faint: #8c8c8c;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --radius-card: 20px;
+  --radius-panel: 16px;
+  --radius-pill: 999px;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-poppins);
+  --font-body: var(--font-geist-sans);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+/* Frosted glass pane used as the backdrop for full-page sections. A faint
+   diagonal sheen + light hairline border + soft inner highlight read as a
+   pane of glass floating over the page; the backdrop blur frosts the orbs
+   drifting behind it. */
+@utility glass-backdrop {
+  border-radius: 24px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.07) 34%,
+    rgba(255, 255, 255, 0.035) 62%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 80px 0 rgba(255, 255, 255, 0.04),
+    0 30px 90px -24px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+::selection {
+  background: var(--color-fg);
+  color: var(--color-bg);
+}
+
+@utility custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.55);
+  }
 }
