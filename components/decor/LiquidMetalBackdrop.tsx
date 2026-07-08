@@ -178,7 +178,13 @@ export function LiquidMetalBackdrop({ className }: { className?: string }) {
             every merge. foreignObject lets the WebGL canvas live inside the
             masked SVG. */}
         <foreignObject x={FIELD_X} y={FIELD_Y} width={FIELD_W} height={FIELD_H} mask={`url(#${maskId})`}>
-          <div style={{ width: "100%", height: "100%" }}>
+          {/* Explicit px (not %) — iOS Safari fails to resolve percentage
+              sizing for foreignObject content against the foreignObject's own
+              box and instead sizes it against the document/viewport, which is
+              what caused the shader to blow up full-bleed on real phones
+              (desktop devtools' mobile emulation still uses the desktop
+              engine, so it never reproduced there). */}
+          <div style={{ width: FIELD_W, height: FIELD_H }}>
             <LiquidMetal
               {...liquidMetalPresets[2]}
               shape="none"
@@ -203,7 +209,7 @@ export function LiquidMetalBackdrop({ className }: { className?: string }) {
               speed={shouldReduceMotion ? 0 : 0.3}
               minPixelRatio={1}
               maxPixelCount={900 * 560}
-              style={{ width: "100%", height: "100%" }}
+              style={{ width: FIELD_W, height: FIELD_H }}
             />
           </div>
         </foreignObject>
