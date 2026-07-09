@@ -33,6 +33,18 @@ import { useId } from "react";
  * it is centered in whatever box the parent gives and clipped by the parent's
  * overflow, matching the previous center-anchored layout.
  *
+ * Why the WebGL canvas is a plain HTML div, not an SVG `<foreignObject>`: it
+ * used to be. iOS Safari (unlike desktop devtools' mobile emulation, which
+ * runs the desktop engine and never reproduces this) has long-standing bugs
+ * sizing and re-laying-out content mounted inside `<foreignObject>` — on real
+ * phones the shader would render at some multiple of the intended field size
+ * regardless of explicit px styles on the mounted div, blowing the effect out
+ * full-bleed. CSS masking sidesteps this entirely: the animated metaball mask
+ * still lives in an SVG `<mask>`, but it's applied to a normal HTML div via
+ * `mask-image: url(#id)` rather than by nesting the canvas inside the SVG.
+ * The mask's `<defs>` SVG has no visual box of its own (0x0, absolutely
+ * positioned) — only its `<mask>` resource is referenced.
+ *
  * Perf notes:
  * - Only one shader runs (down from three), so far fewer shaded pixels.
  * - `minPixelRatio={1}` + `maxPixelCount` cap the pixels shaded per frame.
@@ -42,15 +54,13 @@ import { useId } from "react";
 // Fixed userspace the SVG viewBox maps 1:1 to px. The metal FIELD is padded
 // out beyond the visible stage so that when a blob swings wide it always has
 // metal underneath to reveal — otherwise it would get sliced flat at the
-// foreignObject edge. The extra field is invisible (masked away) except where a
-// blob currently sits.
+// field edge. The extra field is invisible (masked away) except where a blob
+// currently sits.
 const STAGE_W = 920;
 const STAGE_H = 400;
 const CX = STAGE_W / 2;
 const CY = STAGE_H / 2;
 const PAD = 210;
-const FIELD_X = -PAD;
-const FIELD_Y = -PAD;
 const FIELD_W = STAGE_W + PAD * 2;
 const FIELD_H = STAGE_H + PAD * 2;
 
@@ -90,6 +100,9 @@ const BLOBS: Orbit[] = [
 // loop so the Infinity repeat has no seam.
 const STEPS = 64;
 
+// Coordinates are in FIELD space (0,0 at the field's top-left) since the mask
+// is applied via CSS to the field-sized div — offset every sample by PAD so
+// the stage-centered orbit math above still lands in the middle of the field.
 function buildLoop(o: Orbit) {
   const cx: number[] = [];
   const cy: number[] = [];
@@ -97,8 +110,8 @@ function buildLoop(o: Orbit) {
     const t = (i / STEPS) * Math.PI * 2;
     const a = o.phase + o.dir * t;
     const e = o.phase + o.edir * o.k * t;
-    cx.push(CX + o.ax * Math.cos(a) + o.ex * Math.cos(e));
-    cy.push(CY + o.ay * Math.sin(a) + o.ey * Math.sin(e));
+    cx.push(PAD + CX + o.ax * Math.cos(a) + o.ex * Math.cos(e));
+    cy.push(PAD + CY + o.ay * Math.sin(a) + o.ey * Math.sin(e));
   }
   return { cx, cy };
 }
@@ -115,16 +128,9 @@ export function LiquidMetalBackdrop({ className }: { className?: string }) {
 
   return (
     <div className={`relative ${className ?? ""}`}>
-      {/* Fixed-size stage centered in the parent box. The SVG viewBox maps 1:1
-          to these px so the orbit radii/sizes above are literal pixels. */}
-      <svg
-        aria-hidden
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-        width={STAGE_W}
-        height={STAGE_H}
-        viewBox={`0 0 ${STAGE_W} ${STAGE_H}`}
-        style={{ pointerEvents: "none", overflow: "visible" }}
-      >
+      {/* Defs-only SVG: no visual box (0x0), just holds the goo filter and the
+          metaball mask so the HTML div below can reference it via CSS. */}
+      <svg aria-hidden width="0" height="0" style={{ position: "absolute" }}>
         <defs>
           {/* Goo: blur the orbiting circles so their alphas overlap, then a
               high-slope alpha ramp re-hardens the union into a single crisp
@@ -141,9 +147,10 @@ export function LiquidMetalBackdrop({ className }: { className?: string }) {
           </filter>
 
           {/* The mask: white metaballs reveal the metal, everything else hides
-              it. maskContentUnits default to userSpaceOnUse, so the circle
-              coords are in the same px space as the viewBox. */}
-          <mask id={maskId} maskUnits="userSpaceOnUse" x={FIELD_X} y={FIELD_Y} width={FIELD_W} height={FIELD_H}>
+              it. userSpaceOnUse + explicit x/y/width/height puts the circle
+              coords in the same px space as the field div this mask is
+              applied to via CSS (0,0 at the div's top-left). */}
+          <mask id={maskId} maskUnits="userSpaceOnUse" x={0} y={0} width={FIELD_W} height={FIELD_H}>
             <g filter={`url(#${gooId})`}>
               {BLOBS.map((b, i) => {
                 const loop = LOOPS[i];
@@ -172,48 +179,51 @@ export function LiquidMetalBackdrop({ className }: { className?: string }) {
             </g>
           </mask>
         </defs>
-
-        {/* One continuous liquid-metal surface, masked into the metaballs.
-            Because it is a single shader, the reflection flows unbroken across
-            every merge. foreignObject lets the WebGL canvas live inside the
-            masked SVG. */}
-        <foreignObject x={FIELD_X} y={FIELD_Y} width={FIELD_W} height={FIELD_H} mask={`url(#${maskId})`}>
-          {/* Explicit px (not %) — iOS Safari fails to resolve percentage
-              sizing for foreignObject content against the foreignObject's own
-              box and instead sizes it against the document/viewport, which is
-              what caused the shader to blow up full-bleed on real phones
-              (desktop devtools' mobile emulation still uses the desktop
-              engine, so it never reproduced there). */}
-          <div style={{ width: FIELD_W, height: FIELD_H }}>
-            <LiquidMetal
-              {...liquidMetalPresets[2]}
-              shape="none"
-              fit="cover"
-              // Brighter, harder-edged surface reads as polished chrome: a bright
-              // silver base, pure-white specular tint, tighter softness for
-              // sharper highlights, and more repetition/dispersion for the oily
-              // sheen. Because there is now one field, the dispersion looks like
-              // a coherent sheen instead of the old clashing rainbow seam.
-              colorBack="#cdd2db"
-              colorTint="#ffffff"
-              softness={0.04}
-              repetition={4.4}
-              shiftRed={0.4}
-              shiftBlue={0.4}
-              contour={0.36}
-              distortion={0.14}
-              scale={0.78}
-              angle={70}
-              // Slow flow: the surface glides like molten metal instead of
-              // shimmering or twitching.
-              speed={shouldReduceMotion ? 0 : 0.3}
-              minPixelRatio={1}
-              maxPixelCount={900 * 560}
-              style={{ width: FIELD_W, height: FIELD_H }}
-            />
-          </div>
-        </foreignObject>
       </svg>
+
+      {/* Fixed-size field centered in the parent box, masked into the
+          metaballs via CSS. Because it's one continuous shader, the
+          reflection flows unbroken across every merge. */}
+      <div
+        aria-hidden
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+        style={{
+          width: FIELD_W,
+          height: FIELD_H,
+          pointerEvents: "none",
+          WebkitMaskImage: `url(#${maskId})`,
+          maskImage: `url(#${maskId})`,
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+        }}
+      >
+        <LiquidMetal
+          {...liquidMetalPresets[2]}
+          shape="none"
+          fit="cover"
+          // Brighter, harder-edged surface reads as polished chrome: a bright
+          // silver base, pure-white specular tint, tighter softness for
+          // sharper highlights, and more repetition/dispersion for the oily
+          // sheen. Because there is now one field, the dispersion looks like
+          // a coherent sheen instead of the old clashing rainbow seam.
+          colorBack="#cdd2db"
+          colorTint="#ffffff"
+          softness={0.04}
+          repetition={4.4}
+          shiftRed={0.4}
+          shiftBlue={0.4}
+          contour={0.36}
+          distortion={0.14}
+          scale={0.78}
+          angle={70}
+          // Slow flow: the surface glides like molten metal instead of
+          // shimmering or twitching.
+          speed={shouldReduceMotion ? 0 : 0.3}
+          minPixelRatio={1}
+          maxPixelCount={900 * 560}
+          style={{ width: FIELD_W, height: FIELD_H }}
+        />
+      </div>
     </div>
   );
 }
