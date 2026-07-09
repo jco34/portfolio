@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import { Navbar } from "@/components/layout/Navbar";
+import { NowPlayingWidget } from "@/components/widgets/NowPlayingWidget";
 import { nav } from "@/content/nav";
 import "./globals.css";
 
@@ -56,6 +57,7 @@ export default function RootLayout({
         </a>
         <Navbar items={nav} />
         {children}
+        <NowPlayingWidget />
       </body>
     </html>
   );
