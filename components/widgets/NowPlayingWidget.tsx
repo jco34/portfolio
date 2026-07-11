@@ -159,7 +159,7 @@ export function NowPlayingWidget() {
               className="flex shrink-0 flex-col overflow-hidden pr-4 text-left"
             >
               <span className="font-body text-fg truncate text-xs font-medium whitespace-nowrap">
-                Come vibe with me 🎧
+                currently listening to 🎧
               </span>
               <span className="font-body text-muted truncate text-xs whitespace-nowrap">
                 {track.title} · {track.artist}
