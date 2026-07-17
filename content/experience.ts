@@ -5,7 +5,7 @@ export const experience: ExperienceItem[] = [
     company: "SoluxionLab Inc.",
     role: "Backend Developer",
     start: "Mar 2026",
-    end: "Present",
+    end: "Jul 2026",
     groups: [
       {
         project: "Unifyr (Manufacturing Execution System)",
