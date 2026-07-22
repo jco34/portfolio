@@ -36,4 +36,17 @@ export const projects: Project[] = [
       "/images/projects/apaman-3-preview.jpg",
     ],
   },
+  {
+    name: "KME Design and Construction",
+    status: "Work in progress",
+    description:
+      "A marketing-site prototype for a Filipino general contractor working across vertical builds (office towers, condominiums) and horizontal infrastructure (roads, bridges, flyovers). I designed and built the full front end with the Next.js App Router, React, and Tailwind CSS — an editorial \"blueprint sheet\" layout with a bold type system, a filterable selected-work grid, and dedicated projects, services, careers, team, and news sections.",
+    tech: ["nextjs", "react", "typescript", "tailwindcss"],
+    href: "https://kme-prototype-1.vercel.app/",
+    images: [
+      "/images/projects/kme-1-preview.jpg",
+      "/images/projects/kme-2-preview.jpg",
+      "/images/projects/kme-3-preview.jpg",
+    ],
+  },
 ];

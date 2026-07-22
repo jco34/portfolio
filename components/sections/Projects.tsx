@@ -76,9 +76,17 @@ export function Projects() {
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="flex flex-col gap-10"
             >
-              <h3 className="font-body text-fg text-[32px] font-semibold uppercase sm:text-[44px]">
-                {project.name}
-              </h3>
+              <div className="flex flex-col gap-4">
+                {project.status ? (
+                  <span className="font-body inline-flex w-fit items-center gap-2 rounded-pill border border-[#FBBF24]/25 bg-[#FBBF24]/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-[#FBBF24]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#FBBF24]" />
+                    {project.status}
+                  </span>
+                ) : null}
+                <h3 className="font-body text-fg text-[32px] font-semibold uppercase sm:text-[44px]">
+                  {project.name}
+                </h3>
+              </div>
               <p className="text-muted font-body text-base leading-6">
                 {project.description}
               </p>
@@ -151,23 +159,23 @@ export function Projects() {
                           target="_blank"
                           rel="noopener noreferrer"
                           aria-label={`Open ${project.name}`}
-                          className="block h-full w-full"
+                          className="relative block h-full w-full"
                         >
                           <Image
                             src={project.images[previewIndex]}
                             alt={`${project.name} preview ${previewIndex + 1} of ${project.images.length}`}
-                            width={527}
-                            height={378}
-                            className="h-full w-full object-cover"
+                            fill
+                            sizes="(max-width: 768px) 100vw, 527px"
+                            className="object-cover"
                           />
                         </a>
                       ) : (
                         <Image
                           src={project.images[previewIndex]}
                           alt={`${project.name} preview ${previewIndex + 1} of ${project.images.length}`}
-                          width={527}
-                          height={378}
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="(max-width: 768px) 100vw, 527px"
+                          className="object-cover"
                         />
                       )}
                     </motion.div>

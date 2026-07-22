@@ -50,7 +50,7 @@ export function Hero() {
           {profile.headline}
         </motion.h1>
         <motion.div variants={fadeUp}>
-          <GlassButton href={profile.cvUrl} icon={<Download size={16} />}>
+          <GlassButton href={profile.cvUrl} download icon={<Download size={16} />}>
             Download Resume
           </GlassButton>
         </motion.div>

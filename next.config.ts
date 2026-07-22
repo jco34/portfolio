@@ -10,7 +10,7 @@ const cspHeader = `
   script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""};
   style-src 'self' 'unsafe-inline';
   img-src 'self' blob: data: https://i.scdn.co;
-  font-src 'self';
+  font-src 'self' data:;
   frame-src https://open.spotify.com;
   connect-src 'self';
   object-src 'none';

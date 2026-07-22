@@ -11,6 +11,9 @@ type GlassButtonProps = {
   className?: string;
   type?: "button" | "submit";
   disabled?: boolean;
+  /** Render a plain anchor (with the download attribute) instead of a
+   * prefetching next/link. Use for static file downloads like the resume. */
+  download?: boolean;
   children: React.ReactNode;
 };
 
@@ -31,6 +34,7 @@ export function GlassButton({
   className,
   type = "button",
   disabled,
+  download,
   children,
 }: GlassButtonProps) {
   const content = (
@@ -39,6 +43,20 @@ export function GlassButton({
       <span>{children}</span>
     </>
   );
+
+  if (href && download) {
+    return (
+      <motion.a
+        href={href}
+        download
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.98 }}
+        className={cn(glassClasses, className)}
+      >
+        {content}
+      </motion.a>
+    );
+  }
 
   if (href) {
     return (

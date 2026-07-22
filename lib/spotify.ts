@@ -23,6 +23,15 @@ const TOKEN_EXPIRY_MARGIN_MS = 60_000;
 let cachedNowPlaying: { value: NowPlaying | null; expiresAt: number } | null = null;
 const NOW_PLAYING_TTL_MS = 15_000;
 
+// Cap each upstream request. Spotify (or a broken local network) can otherwise
+// hang on the TCP connect until undici's ~10s default, blocking the request and
+// surfacing a 500. Fail fast and let the caller fall back to cached data.
+const FETCH_TIMEOUT_MS = 5_000;
+
+function timedFetch(url: string, options: RequestInit) {
+  return fetch(url, { ...options, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+}
+
 async function getAccessToken() {
   if (cachedToken && cachedToken.expiresAt > Date.now()) {
     return cachedToken.value;
@@ -36,7 +45,7 @@ async function getAccessToken() {
 
   const basic = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 
-  const res = await fetch(TOKEN_URL, {
+  const res = await timedFetch(TOKEN_URL, {
     method: "POST",
     headers: {
       Authorization: `Basic ${basic}`,
@@ -70,9 +79,18 @@ export async function getNowPlaying(): Promise<NowPlaying | null> {
     return cachedNowPlaying.value;
   }
 
-  const track = await fetchNowPlaying();
-  cachedNowPlaying = { value: track, expiresAt: Date.now() + NOW_PLAYING_TTL_MS };
-  return track;
+  try {
+    const track = await fetchNowPlaying();
+    cachedNowPlaying = { value: track, expiresAt: Date.now() + NOW_PLAYING_TTL_MS };
+    return track;
+  } catch (error) {
+    // Network blip, timeout, or upstream error. Don't blow up the request —
+    // serve the last known track (even if the TTL has lapsed) so the widget
+    // stays populated, falling back to null (i.e. "not playing") if we've
+    // never had a successful fetch.
+    console.error("[spotify] now-playing fetch failed:", error);
+    return cachedNowPlaying?.value ?? null;
+  }
 }
 
 async function fetchNowPlaying(): Promise<NowPlaying | null> {
@@ -81,7 +99,7 @@ async function fetchNowPlaying(): Promise<NowPlaying | null> {
 
   const headers = { Authorization: `Bearer ${accessToken}` };
 
-  const nowRes = await fetch(NOW_PLAYING_URL, { headers, cache: "no-store" });
+  const nowRes = await timedFetch(NOW_PLAYING_URL, { headers, cache: "no-store" });
 
   if (nowRes.status === 200) {
     const data = await nowRes.json();
@@ -99,7 +117,7 @@ async function fetchNowPlaying(): Promise<NowPlaying | null> {
   }
 
   // Nothing currently playing — fall back to the most recently played track.
-  const recentRes = await fetch(RECENTLY_PLAYED_URL, { headers, cache: "no-store" });
+  const recentRes = await timedFetch(RECENTLY_PLAYED_URL, { headers, cache: "no-store" });
   if (!recentRes.ok) return null;
 
   const recentData = await recentRes.json();

@@ -64,6 +64,7 @@ export type Project = {
   tech: Tech["id"][];
   href?: string;
   images: string[];
+  status?: string;
 };
 
 export type Stat = { value: string; label: string };
