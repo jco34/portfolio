@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import { Navbar } from "@/components/layout/Navbar";
@@ -36,6 +36,12 @@ export const metadata: Metadata = {
     description,
     images: ["/images/avatar.png"],
   },
+};
+
+// Tints mobile browser UI to the page background so the chrome doesn't flash
+// white above a dark page.
+export const viewport: Viewport = {
+  themeColor: "#141414",
 };
 
 export default function RootLayout({
