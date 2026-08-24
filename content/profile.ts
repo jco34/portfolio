@@ -10,7 +10,7 @@ export const profile: Profile = {
     "Full-Stack Developer with 3+ years of experience building scalable web applications with React, Next.js, TypeScript, and Node.js. I deliver robust APIs, lead system design, and mentor developers across high-impact projects.",
   email: "jebeworkin@gmail.com",
   phone: "+63 925 495 2909",
-  cvUrl: "/cv.pdf",
+  cvUrl: "/Jeremiah_Comeda_Resume.pdf",
   avatar: "/images/avatar.png",
   projectsDoneHref: "#projects",
 };
