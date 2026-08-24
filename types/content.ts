@@ -58,6 +58,16 @@ export type CertificationItem = {
   logo?: string;
 };
 
+/** One design direction of a project that was built more than once — same
+    stack and same content, a different design philosophy. */
+export type ProjectVariant = {
+  label: string;
+  /** Short line describing what makes this direction different. */
+  note: string;
+  href: string;
+  images: string[];
+};
+
 export type Project = {
   name: string;
   description: string;
@@ -65,6 +75,9 @@ export type Project = {
   href?: string;
   images: string[];
   status?: string;
+  /** When present, the card renders a switcher and `href`/`images` above are
+      only the initial (first variant's) values. */
+  variants?: ProjectVariant[];
 };
 
 export type Stat = { value: string; label: string };

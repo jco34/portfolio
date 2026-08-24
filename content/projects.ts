@@ -1,4 +1,30 @@
-import type { Project } from "@/types/content";
+import type { Project, ProjectVariant } from "@/types/content";
+
+// KME was designed twice on purpose: two complete front ends over the same
+// stack and the same content, so the client could choose a direction rather
+// than approve the only one on offer. Design 01 stays the card's default.
+const kmeDesigns: ProjectVariant[] = [
+  {
+    label: "Design 01",
+    note: "Editorial blueprint sheet",
+    href: "https://kme-prototype-1.vercel.app/",
+    images: [
+      "/images/projects/kme-1-preview.jpg",
+      "/images/projects/kme-2-preview.jpg",
+      "/images/projects/kme-3-preview.jpg",
+    ],
+  },
+  {
+    label: "Design 02",
+    note: "Cinematic full-bleed",
+    href: "https://kme-prototype-2.vercel.app/",
+    images: [
+      "/images/projects/kme-alt-1-preview.jpg",
+      "/images/projects/kme-alt-2-preview.jpg",
+      "/images/projects/kme-alt-3-preview.jpg",
+    ],
+  },
+];
 
 export const projects: Project[] = [
   {
@@ -40,13 +66,10 @@ export const projects: Project[] = [
     name: "KME Design and Construction",
     status: "Work in progress",
     description:
-      "A marketing-site prototype for a Filipino general contractor working across vertical builds (office towers, condominiums) and horizontal infrastructure (roads, bridges, flyovers). I designed and built the full front end with the Next.js App Router, React, and Tailwind CSS — an editorial \"blueprint sheet\" layout with a bold type system, a filterable selected-work grid, and dedicated projects, services, careers, team, and news sections.",
+      "A marketing-site prototype for a Filipino general contractor working across vertical builds (office towers, condominiums) and horizontal infrastructure (roads, bridges, flyovers). I built the full front end with the Next.js App Router, React, and Tailwind CSS — a bold type system, a filterable selected-work grid, and dedicated projects, services, careers, team, and news sections. I shipped it as two complete design directions over the same stack and content, so the client could choose a philosophy instead of approving the only option.",
     tech: ["nextjs", "react", "typescript", "tailwindcss"],
-    href: "https://kme-prototype-1.vercel.app/",
-    images: [
-      "/images/projects/kme-1-preview.jpg",
-      "/images/projects/kme-2-preview.jpg",
-      "/images/projects/kme-3-preview.jpg",
-    ],
+    href: kmeDesigns[0].href,
+    images: kmeDesigns[0].images,
+    variants: kmeDesigns,
   },
 ];
