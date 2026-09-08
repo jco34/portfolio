@@ -11,6 +11,6 @@ export const profile: Profile = {
   email: "jebeworkin@gmail.com",
   phone: "+63 925 495 2909",
   cvUrl: "/Jeremiah_Comeda_Resume.pdf",
-  avatar: "/images/avatar.png",
+  avatar: "/images/avatar-photo.jpg",
   projectsDoneHref: "#projects",
 };

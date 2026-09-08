@@ -51,8 +51,8 @@ export function Profile() {
                 <Image
                   src={profile.avatar}
                   alt={`${profile.name} avatar`}
-                  width={527}
-                  height={527}
+                  width={945}
+                  height={960}
                   className="aspect-square w-full rounded-2xl object-cover"
                   priority
                 />
