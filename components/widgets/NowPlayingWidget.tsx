@@ -40,15 +40,25 @@ export function NowPlayingWidget() {
   }, []);
 
   // Auto-reveal the invite once the track loads, then settle back down.
-  useEffect(() => {
-    if (!track || introDone) return;
+  // Opening it during render (rather than in an effect) avoids the extra
+  // commit-then-effect pass that a synchronous setState in useEffect causes -
+  // the same pattern the projects carousel uses to reset its slideshow. The
+  // timer that closes it stays in an effect, since that is a real subscription
+  // to an external clock that needs cleanup.
+  const [introStarted, setIntroStarted] = useState(false);
+  if (track && !introStarted && !introDone) {
+    setIntroStarted(true);
     setExpanded(true);
+  }
+
+  useEffect(() => {
+    if (!introStarted || introDone) return;
     const id = setTimeout(() => {
       setExpanded(false);
       setIntroDone(true);
     }, INTRO_REVEAL_MS);
     return () => clearTimeout(id);
-  }, [track, introDone]);
+  }, [introStarted, introDone]);
 
   useEffect(() => {
     if (!playerOpen) return;
